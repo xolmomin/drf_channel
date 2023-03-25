@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "django-channel"
+version = "0.1.0"
+description = ""
+authors = ["xolmomin <xolmomin@gmail.com>"]
+readme = "README.md"
+packages = [{include = "django_channel"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+django = "4.0.8"
+daphne = "3.0.2"
+djangorestframework = "3.12.4"
+djangorestframework-simplejwt = "4.8.0"
+channels = "3.0.4"
+update = "^0.0.1"
+channels-redis = "^4.0.0"
+twisted = "^22.10.0"
+automat = "^22.10.0"
+pytz = "^2023.2"
+drf-yasg = "^1.21.5"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
