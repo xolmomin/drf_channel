@@ -14,7 +14,11 @@ group
 - views
 
 
-
+TASKS
 /register
 /get-chat-list (oldin barcha yozilgan userlar listi)
-/get-message (p2p dagi xabarlarni olish)
+
+p2p chatting
+
+
+testing

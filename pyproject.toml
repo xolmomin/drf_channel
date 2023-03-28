@@ -19,6 +19,7 @@ twisted = "^22.10.0"
 automat = "^22.10.0"
 pytz = "^2023.2"
 drf-yasg = "^1.21.5"
+ujson = "^5.7.0"
 
 
 [build-system]

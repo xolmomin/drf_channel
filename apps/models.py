@@ -15,3 +15,6 @@ class Message(Model):
 
     edited_at = DateTimeField(auto_now_add=True)
     created_at = DateTimeField(auto_now=True, editable=False)
+
+    class Meta:
+        ordering = ('-created_at',)
