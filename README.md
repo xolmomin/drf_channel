@@ -27,10 +27,11 @@ To get started with WebSocket Chat, follow these steps:
 
 ## Usage
 
-To use WebSocket Chat, follow these steps:
+<img src="https://blog.postman.com/wp-content/uploads/2021/05/websocket-connect-1.gif">
 
-1. Enter your name and a chat room name on the login screen.
-2. Once you're logged in, you'll see a list of online users in the chat room.
+To use WebSocket Chat, follow these steps:
+1. Enter your POSTMAN and crate websocket folloving press `CTRL + N`.
+2. Once you're entered, you'll be enter websocket url like `ws://localhost:8000/ws`.
 3. Click on a user's name to start a one-to-one conversation with them.
 4. Type your message in the input box at the bottom of the screen and hit enter to send it.
 5. You can also send emojis and images by clicking on the corresponding buttons above the input box.
