@@ -1,3 +1,9 @@
+task
+
+- messages larni page ni pagination qoshish
+- chat list ni olish
+
+
 user
 - is_online
 - last_activity

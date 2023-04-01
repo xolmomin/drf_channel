@@ -8,15 +8,31 @@ from django.db.models import Q
 from apps.models import Users, Message
 
 
-class ChatConsumer(AsyncJsonWebsocketConsumer):
+class BaseAsyncJsonWebsocketConsumer(AsyncJsonWebsocketConsumer):
+    @classmethod
+    async def decode_json(cls, content):
+        try:
+            return ujson.loads(content)
+        except Exception as e:
+            print(content, e, 'XATOLIK')
+
+    @classmethod
+    async def encode_json(cls, content):
+        try:
+            return ujson.dumps(content)
+        except Exception as e:
+            print(content, e, 'XATOLIK')
+
+
+class ChatConsumer(BaseAsyncJsonWebsocketConsumer):
     groups = 'groups'
     __format_data = '%Y-%m-%d %H:%M:%S'
 
     async def connect(self):
         self.from_user = self.scope['user']
+        await self.accept()
 
         if self.from_user.is_anonymous:
-            await self.accept()
             response = {
                 'message': 'JWT bilan kiring'
             }
@@ -24,7 +40,6 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             await self.close()
         else:
             await self.channel_layer.group_add(self.groups, self.channel_name)
-            await self.accept()
             await self.notify_user_status(True)
         return
 
@@ -62,7 +77,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
         await self.channel_layer.group_send(
             self.groups, {
-                'type': 'chat.message',
+                'type': 'chat_message',
                 'message': msg.message,
                 'to_user': msg.sender_id,
                 'from_user': msg.receiver_id,
@@ -86,7 +101,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         await self.channel_layer.group_send(
             self.groups,
             {
-                'type': 'chat.change.status',
+                'type': 'chat_change_status',
                 'user': {
                     'id': self.from_user.id,
                     'username': self.from_user.username
@@ -134,19 +149,3 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 'created_at': event['created_at']
             }
             await self.send_json(data)
-
-    @classmethod
-    async def decode_json(cls, content):
-        try:
-            return ujson.loads(content)
-        except Exception as e:
-            print(content, e, 'XATOLIK')
-
-    @classmethod
-    async def encode_json(cls, content):
-        try:
-            return ujson.dumps(content)
-        except Exception as e:
-            print(content, e, 'XATOLIK')
-
-# ws://10.10.2.88:8000/ws
