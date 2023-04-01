@@ -10,18 +10,21 @@ from apps.models import Users, Message
 
 class BaseAsyncJsonWebsocketConsumer(AsyncJsonWebsocketConsumer):
     @classmethod
-    async def decode_json(cls, content):
+    async def decode_json(cls, data):
         try:
-            return ujson.loads(content)
+            return ujson.loads(data)
         except Exception as e:
-            print(content, e, 'XATOLIK')
+            print(data, e, 'XATOLIK')
 
     @classmethod
-    async def encode_json(cls, content):
+    async def encode_json(cls, data):
         try:
-            return ujson.dumps(content)
+            return ujson.dumps(data)
         except Exception as e:
-            print(content, e, 'XATOLIK')
+            print(data, e, 'XATOLIK')
+
+    async def send_error(self, msg: str):
+        await self.send_json({'msg': msg})
 
 
 class ChatConsumer(BaseAsyncJsonWebsocketConsumer):
@@ -33,71 +36,102 @@ class ChatConsumer(BaseAsyncJsonWebsocketConsumer):
         await self.accept()
 
         if self.from_user.is_anonymous:
-            response = {
-                'message': 'JWT bilan kiring'
-            }
-            await self.send_json(response)
+            await self.send_error('JWT bilan kiring')
             await self.close()
         else:
             await self.channel_layer.group_add(self.groups, self.channel_name)
-            await self.notify_user_status(True)
+            await self.notify_user_status()
+
         return
+
+    async def send_message(self, sender_id: int, receiver_id: int, msg_id: int):
+        await self.channel_layer.group_send(
+            self.groups, {
+                'type': 'send_read_msg',
+                'from_user': sender_id,
+                'to_user': receiver_id,
+                'msg_id': msg_id
+            }
+        )
 
     async def disconnect(self, close_code):
         await self.channel_layer.group_discard(self.groups, self.channel_name)
         if self.from_user.is_authenticated:
             await self.notify_user_status(False)
 
-    async def send_error_msg(self, msg: str):
-        res = {
-            'message': msg
-        }
-        await self.send_json(res)
+    async def msg_type(self, data):
+        msg = data.get('msg')
 
-    async def receive_json(self, content, *args):
-        await self.get_list()
-        message = content.get('message')
-        user_id = content.get('user_id')
-        self.to_user = await self.get_user(user_id)
-
-        if not message:
-            await self.send_error_msg('xabar yoq')
+        if not msg:
+            await self.send_error('xabar yoq')
             return
 
         if not self.to_user:
-            await self.send_error_msg('userni kiriting')
+            await self.send_error('userni kiriting')
             return
 
         if not self.to_user:
-            await self.send_error_msg('bunday odam yoqku')
+            await self.send_error('bunday odam yoqku')
             return
 
-        msg = await self.save_message(self.from_user.id, self.to_user.id, message)
+        msg = await self.save_msg(self.from_user.id, self.to_user.id, msg)
         created_at = datetime.strftime(msg.created_at, self.__format_data)
 
         await self.channel_layer.group_send(
             self.groups, {
-                'type': 'chat_message',
-                'message': msg.message,
-                'to_user': msg.sender_id,
-                'from_user': msg.receiver_id,
+                'type': 'send_msg',
+                'msg': msg.message,
+                'to_user': msg.receiver_id,
+                'from_user': msg.sender_id,
+                'msg_id': msg.id,
                 'created_at': created_at
             }
         )
 
+    @database_sync_to_async
+    def user_read_msg_db(self, user_id: int, msg_id: int):
+        message = Message.objects.filter(receiver_id=user_id, id=msg_id).first()
+        if message:
+            message.is_read = True
+            return message.sender_id, True
+        return None, False
+
+    async def read_msg(self, data):
+        msg_id = data.get('msg_id')
+        return await self.user_read_msg_db(self.from_user.id, msg_id)
+
+    async def receive_json(self, data, *args):
+        user_id = data.get('user_id')
+        _type = data.get('type')
+        self.to_user = await self.get_user(user_id)
+        validator = {
+            'msg': ('msg', 'user_id'),
+            'read_msg': ('msg_id',)
+        }
+        if set(validator.get(_type, ())).difference(set(data.keys())):
+            await self.send_error('Invalid data')
+
+        if _type == 'msg':
+            await self.msg_type(data)
+
+        elif _type == 'read_msg':
+            sender_id, is_read = await self.read_msg(data)
+            if is_read:
+                await self.send_message(sender_id, self.from_user.id, data.get('msg_id') )
+
+        else:
+            await self.send_error('type ni kiriting')
+            return
+
     @database_sync_to_async  # ✅
-    def save_message(self, from_user: int, to_user: int, message: str):
-        return Message.objects.create(sender_id=from_user, receiver_id=to_user, message=message)
+    def save_msg(self, from_user: int, to_user: int, msg: str):
+        return Message.objects.create(sender_id=from_user, receiver_id=to_user, message=msg)
 
     @database_sync_to_async  # ✅
     def get_user(self, pk) -> bool:
         return Users.objects.filter(pk=pk).first()
 
-    @database_sync_to_async
-    def get_list(self):
-        return Users.objects.all()
-
-    async def notify_user_status(self, is_online: bool):
+    async def notify_user_status(self, is_online: bool = True):
         await self.channel_layer.group_send(
             self.groups,
             {
@@ -116,6 +150,13 @@ class ChatConsumer(BaseAsyncJsonWebsocketConsumer):
             Q(receiver=to_user) & Q(sender=from_id) |
             Q(receiver=from_id) & Q(sender=to_user)
         ).exists()
+
+    @database_sync_to_async
+    def my_chats(self, to_user, from_id):
+        return Message.objects.filter(
+            Q(receiver=to_user) & Q(sender=from_id) |
+            Q(receiver=from_id) & Q(sender=to_user)
+        )
 
     @database_sync_to_async
     def update_user_status(self, user, is_online=False) -> None:
@@ -139,13 +180,40 @@ class ChatConsumer(BaseAsyncJsonWebsocketConsumer):
             await self.send(ujson.dumps(data))
             return
 
-    async def chat_message(self, event):
-        message = event['message']
+    async def send_read_msg(self, event):
         from_user = event['from_user']
         if self.from_user.pk == event['to_user'] or self.from_user.pk == from_user:
             data = {
-                'message': message,
+                'type': 'read_msg',
+                'msg_id': event['msg_id'],
+                'from': event['to_user'],
+            }
+            await self.send_json(data)
+
+    async def send_msg(self, event):
+        from_user = event['from_user']
+        if self.from_user.pk == event['to_user'] or self.from_user.pk == from_user:
+            data = {
+                'id': event['msg_id'],
+                'msg': event['msg'],
                 'from': from_user,
                 'created_at': event['created_at']
             }
             await self.send_json(data)
+
+
+'''
+type
+msg - xabar yozishish uchun
+status - online boldimi yoqmi
+read_msg - xabar oqilgani
+
+
+front -> back
+msg, read_msg
+
+
+back -> front
+status, msg, read_msg
+
+'''
