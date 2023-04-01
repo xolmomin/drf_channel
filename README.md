@@ -38,7 +38,7 @@ To use WebSocket Chat, follow these steps:
 If you'd like to contribute to WebSocket Chat, please follow these steps:
 
 1. Fork the repository on GitHub.
-2. Clone your forked repository using the command `git clone https://github.com/yourusername/websocket-chat.git`
+2. Clone your forked repository using the command `git clone https://github.com/xolmomin/drf_channel.git`
 3. Create a new branch for your changes using the command `git checkout -b my-new-feature`
 4. Make your changes to the code and test them locally.
 5. Commit your changes using the command `git commit -m 'Add some feature'`
