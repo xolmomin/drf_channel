@@ -40,7 +40,7 @@ If you'd like to contribute to WebSocket Chat, please follow these steps:
 2. Clone your forked repository using the command `git clone https://github.com/yourusername/websocket-chat.git`
 3. Create a new branch for your changes using the command `git checkout -b my-new-feature`
 4. Make your changes to the code and test them locally.
-5. Commit your changes using the command `git commit -am 'Add some feature'`
+5. Commit your changes using the command `git commit -m 'Add some feature'`
 6. Push your changes to your forked repository using the command `git push origin my-new-feature`
 7. Create a pull request on GitHub.
 
