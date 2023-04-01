@@ -18,8 +18,8 @@ WebSocket Chat is a real-time chat application that allows people to converse wi
 
 To get started with WebSocket Chat, follow these steps:
 
-1. Clone the repository using the command `git clone https://github.com/yourusername/websocket-chat.git`
-2. Navigate to the project directory using the command `cd websocket-chat`
+1. Clone the repository using the command `git clone https://github.com/xolmomin/drf_channel.git`
+2. Navigate to the project directory using the command `cd drf_channel`
 3. Install the dependencies using the command `pip install -r requirements.txt`
 4. Start the server using the command `python manage.py runserver`
 5. Open your web browser and go to `http://localhost:8000`
