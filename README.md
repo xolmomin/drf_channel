@@ -18,9 +18,10 @@ To get started with WebSocket Chat, follow these steps:
 
 1. Clone the repository using the command `git clone https://github.com/yourusername/websocket-chat.git`
 2. Navigate to the project directory using the command `cd websocket-chat`
-3. Install the dependencies using the command `npm install`
-4. Start the server using the command `npm start`
-5. Open your web browser and go to `http://localhost:3000`
+3. Install the dependencies using the command `pip install -r requirements.txt`
+4. Start the server using the command `python manage.py runserver`
+5. Open your web browser and go to `http://localhost:8000`
+
 
 ## Usage
 
