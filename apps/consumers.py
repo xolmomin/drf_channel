@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import ujson
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
@@ -7,7 +9,8 @@ from apps.models import Users, Message
 
 
 class ChatConsumer(AsyncJsonWebsocketConsumer):
-    groups = 'chats'
+    groups = 'groups'
+    __format_data = '%Y-%m-%d %H:%M:%S'
 
     async def connect(self):
         self.from_user = self.scope['user']
@@ -19,15 +22,16 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             }
             await self.send_json(response)
             await self.close()
-            return
         else:
             await self.channel_layer.group_add(self.groups, self.channel_name)
             await self.accept()
             await self.notify_user_status(True)
+        return
 
     async def disconnect(self, close_code):
         await self.channel_layer.group_discard(self.groups, self.channel_name)
-        await self.notify_user_status(False)
+        if self.from_user.is_authenticated:
+            await self.notify_user_status(False)
 
     async def send_error_msg(self, msg: str):
         res = {
@@ -53,19 +57,22 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             await self.send_error_msg('bunday odam yoqku')
             return
 
-        await self.save_message(self.from_user.id, self.to_user.id, message)
+        msg = await self.save_message(self.from_user.id, self.to_user.id, message)
+        created_at = datetime.strftime(msg.created_at, self.__format_data)
 
         await self.channel_layer.group_send(
             self.groups, {
                 'type': 'chat.message',
-                'message': message,
-                'from_user': self.from_user.username
+                'message': msg.message,
+                'to_user': msg.sender_id,
+                'from_user': msg.receiver_id,
+                'created_at': created_at
             }
         )
 
     @database_sync_to_async  # ✅
     def save_message(self, from_user: int, to_user: int, message: str):
-        Message.objects.create(sender_id=from_user, receiver_id=to_user, message=message)
+        return Message.objects.create(sender_id=from_user, receiver_id=to_user, message=message)
 
     @database_sync_to_async  # ✅
     def get_user(self, pk) -> bool:
@@ -102,7 +109,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         print(f"{user.phone_number}- {user.id} -- {'online' if is_online else 'offline'}")
 
     async def chat_change_status(self, event):
-        if self.from_user.pk != event['user']['id']:  # and await self.check_user_chat(self.from_user.id, event['user_id']):
+        if self.from_user.pk != event['user']['id']:
+            # and await self.check_user_chat(self.from_user.id, event['user_id']):
             # print(self.from_user.pk, event['user_id'])
             data = {
                 'type': 'status',
@@ -119,11 +127,13 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
     async def chat_message(self, event):
         message = event['message']
         from_user = event['from_user']
-        data = {
-            'message': message,
-            'from': from_user
-        }
-        await self.send_json(data)
+        if self.from_user.pk == event['to_user'] or self.from_user.pk == from_user:
+            data = {
+                'message': message,
+                'from': from_user,
+                'created_at': event['created_at']
+            }
+            await self.send_json(data)
 
     @classmethod
     async def decode_json(cls, content):
