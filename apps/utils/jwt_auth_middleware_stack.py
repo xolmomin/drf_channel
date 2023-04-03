@@ -8,7 +8,7 @@ from channels.auth import AuthMiddlewareStack
 from channels.db import database_sync_to_async
 from jwt import DecodeError, ExpiredSignatureError, InvalidSignatureError
 from jwt import decode as jwt_decode
-from apps.models import Users
+from apps.models import User
 
 
 class JWTAuthMiddleware:
@@ -54,8 +54,8 @@ class JWTAuthMiddleware:
     @database_sync_to_async
     def get_user(self, user_id):
         try:
-            return Users.objects.get(id=user_id)
-        except Users.DoesNotExist:
+            return User.objects.get(id=user_id)
+        except User.DoesNotExist:
             return AnonymousUser()
 
 

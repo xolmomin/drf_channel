@@ -1,6 +1,0 @@
-channels
-channels-redis
-daphne
-Django
-djangorestframework
-djangorestframework-simplejwt
