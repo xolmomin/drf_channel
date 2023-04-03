@@ -72,12 +72,12 @@ WebSocket Chat was created by Your Name. It uses the following open-source softw
 
 WebSocket Chat is licensed under the MIT License. See `LICENSE` for more information.
 
-# user
+#### user
 
 - is_online
 - last_activity
 
-# per to per chat
+#### per to per chat
 
 - message
     - edit
@@ -87,7 +87,7 @@ WebSocket Chat is licensed under the MIT License. See `LICENSE` for more informa
     - block
     -
 
-# group
+#### group
 
 - views
 
