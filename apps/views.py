@@ -1,10 +1,10 @@
 from django.db.models import Q
-from rest_framework.generics import ListAPIView, CreateAPIView
+from rest_framework.generics import CreateAPIView, ListAPIView
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from apps.models import User, Message
-from apps.serializers import UserModelSerializer, MessageModelSerializer, UserCreateModelSerializer, \
-    MyMessageListModelSerializer
+from apps.models import Message, User
+from apps.serializers import (MessageModelSerializer, UserCreateModelSerializer, UserModelSerializer)
 
 
 class UserCreateAPIView(CreateAPIView):
@@ -15,6 +15,7 @@ class UserCreateAPIView(CreateAPIView):
 class MyChatListApiView(ListAPIView):
     queryset = User.objects.all()
     filter_backends = None
+    permission_classes = (IsAuthenticated,)
     serializer_class = UserModelSerializer
 
 
@@ -24,6 +25,7 @@ class ChatMessageListApiView(ListAPIView):
     '''
     queryset = Message.objects.all()
     filter_backends = None
+    permission_classes = (IsAuthenticated,)
     serializer_class = MessageModelSerializer
 
     def list(self, request, *args, **kwargs):
@@ -40,14 +42,3 @@ class ChatMessageListApiView(ListAPIView):
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
-
-
-class MyMessageListAPIView(ListAPIView):
-    queryset = Message.objects.all()
-    serializer_class = MyMessageListModelSerializer
-
-    def get_queryset(self):
-        user = self.request.user.id
-        query = super().get_queryset()
-        query.filter(Q(sender_id=user) or Q(receiver_id=user))
-        return query

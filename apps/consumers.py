@@ -1,9 +1,10 @@
 from datetime import datetime
 
+from django.db.models import Q
+
 import ujson
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
-from django.db.models import Q
 
 from apps.models import Message, User
 
@@ -203,10 +204,7 @@ class ChatConsumer(BaseAsyncJsonWebsocketConsumer):
 
 
 '''
-type
-msg - xabar yozishish uchun
-status - online boldimi yoqmi
-read_msg - xabar oqilgani
+
 
 
 front -> back

@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
-from django.db.models import Model, ForeignKey, SET_NULL, DateTimeField, CharField, BooleanField
+from django.db.models import (SET_NULL, BooleanField, CharField, DateTimeField,
+                              ForeignKey, Model)
 
 
 class User(AbstractUser):

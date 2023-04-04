@@ -8,6 +8,7 @@ from channels.auth import AuthMiddlewareStack
 from channels.db import database_sync_to_async
 from jwt import DecodeError, ExpiredSignatureError, InvalidSignatureError
 from jwt import decode as jwt_decode
+
 from apps.models import User
 
 
@@ -20,9 +21,11 @@ class JWTAuthMiddleware:
         try:
             headers = {}
             for key, val in scope['headers']:
-                key = key.decode('utf8')
+                if isinstance(key, bytes):
+                    key = key.decode('utf-8')
                 key = key.lower()
-                val = val.decode('utf8')
+                if isinstance(val, bytes):
+                    val = val.decode('utf-8')
                 headers[key] = val
             if jwt_token_list := headers.get('authorization', None):
                 jwt_token = jwt_token_list.split('Bearer ')[1]

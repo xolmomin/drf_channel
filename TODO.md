@@ -33,3 +33,9 @@ testing
  - 1ta gruppa ochib ichida yozish
  - har biriga alohida gruppa ochib yuborish
 
+
+
+type
+msg - xabar yozishish uchun
+status - online boldimi yoqmi
+read_msg - xabar oqilgani
