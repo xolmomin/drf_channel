@@ -30,6 +30,6 @@ p2p chatting
 testing
 
 
-
  - 1ta gruppa ochib ichida yozish
  - har biriga alohida gruppa ochib yuborish
+
