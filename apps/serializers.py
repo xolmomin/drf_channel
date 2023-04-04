@@ -3,7 +3,7 @@ from django.contrib.auth.hashers import make_password
 from rest_framework.fields import CharField
 from rest_framework.serializers import ModelSerializer
 
-from apps.models import Message, User
+from apps.models import Message, User, File
 
 
 class UserModelSerializer(ModelSerializer):
@@ -34,3 +34,15 @@ class MyMessageListModelSerializer(ModelSerializer):
     class Meta:
         model = Message
         fields = ('id', 'message', 'is_read', 'sender', 'receiver', 'created_at')
+
+
+class FileUploadModelSerializer(ModelSerializer):
+    class Meta:
+        model = File
+        exclude = ()
+
+
+class FileGetModelSerializer(ModelSerializer):
+    class Meta:
+        model = File
+        fields = '__all__'

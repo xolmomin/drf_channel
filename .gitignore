@@ -258,3 +258,4 @@ cython_debug/
 
 **/media/**
 !**/media/
+poetry.lock

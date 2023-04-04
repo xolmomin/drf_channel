@@ -1,10 +1,14 @@
 from django.db.models import Q
-from rest_framework.generics import CreateAPIView, ListAPIView
+from rest_framework.generics import CreateAPIView, ListAPIView, GenericAPIView
+from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.viewsets import ModelViewSet
 
-from apps.models import Message, User
-from apps.serializers import (MessageModelSerializer, UserCreateModelSerializer, UserModelSerializer)
+from apps.models import Message, User, File
+from apps.serializers import (MessageModelSerializer, UserCreateModelSerializer, UserModelSerializer,
+                              FileUploadModelSerializer, FileGetModelSerializer)
 
 
 class UserCreateAPIView(CreateAPIView):
@@ -42,3 +46,16 @@ class ChatMessageListApiView(ListAPIView):
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+
+class UploadFileView(ModelViewSet):
+    queryset = File.objects.all()
+    serializer_class = FileUploadModelSerializer
+    parser_classes = (MultiPartParser,)
+    pagination_class = None
+    http_method_names = 'post', 'get'
+
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return FileGetModelSerializer
+        return super().get_serializer_class()
