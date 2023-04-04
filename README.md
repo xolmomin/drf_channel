@@ -2,7 +2,8 @@
 
 <img src="https://assets.stanko.io/blog/production/store/a6bad9b68057b2ed9716dd35ced216fa.gif">
 
-WebSocket Chat is a real-time chat application that allows people to converse with each other in one-to-one messages using the WebSocket protocol.
+WebSocket Chat is a real-time chat application that allows people to converse with each other in one-to-one messages
+using the WebSocket protocol.
 
 ## Features
 
@@ -24,12 +25,12 @@ To get started with WebSocket Chat, follow these steps:
 4. Start the server using the command `python manage.py runserver`
 5. Open your web browser and go to `http://localhost:8000`
 
-
 ## Usage
 
 <img src="https://blog.postman.com/wp-content/uploads/2021/05/websocket-connect-1.gif">
 
 To use WebSocket Chat, follow these steps:
+
 1. Enter your POSTMAN and crate websocket folloving press `CTRL + N`.
 2. Once you're entered, you'll be enter websocket url like `ws://localhost:8000/ws`.
 3. Click on a user's name to start a one-to-one conversation with them.
@@ -53,6 +54,7 @@ If you'd like to contribute to WebSocket Chat, please follow these steps:
 WebSocket Chat was created by Your Name. It uses the following open-source software:
 
 ### Main
+
 - Python
 - Django
 - Websocket
@@ -60,6 +62,7 @@ WebSocket Chat was created by Your Name. It uses the following open-source softw
 - Postgresql
 
 ### Required
+
 - django = "4.0.8"
 - djangorestframework = "3.12.4"
 - djangorestframework-simplejwt = "4.8.0"
@@ -69,35 +72,26 @@ WebSocket Chat was created by Your Name. It uses the following open-source softw
 
 WebSocket Chat is licensed under the MIT License. See `LICENSE` for more information.
 
-user
+#### user
+
 - is_online
 - last_activity
 
-per to per chat
+#### per to per chat
+
 - message
     - edit
     - delete
     - is_read
     - send file
     - block
-    - 
-group
+    -
+
+#### group
+
 - views
 
-
-
-
-
-testing
-
-
-
- - 1ta gruppa ochib ichida yozish
- - har biriga alohida gruppa ochib yuborish
-
-
-
-TASKs
+### TASKS
 
 - README.md
 - fayllarni bo'laklash

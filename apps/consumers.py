@@ -5,7 +5,7 @@ from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from django.db.models import Q
 
-from apps.models import Users, Message
+from apps.models import Message, User
 
 
 class BaseAsyncJsonWebsocketConsumer(AsyncJsonWebsocketConsumer):
@@ -117,7 +117,7 @@ class ChatConsumer(BaseAsyncJsonWebsocketConsumer):
         elif _type == 'read_msg':
             sender_id, is_read = await self.read_msg(data)
             if is_read:
-                await self.send_message(sender_id, self.from_user.id, data.get('msg_id') )
+                await self.send_message(sender_id, self.from_user.id, data.get('msg_id'))
 
         else:
             await self.send_error('type ni kiriting')
@@ -129,7 +129,7 @@ class ChatConsumer(BaseAsyncJsonWebsocketConsumer):
 
     @database_sync_to_async  # ✅
     def get_user(self, pk) -> bool:
-        return Users.objects.filter(pk=pk).first()
+        return User.objects.filter(pk=pk).first()
 
     async def notify_user_status(self, is_online: bool = True):
         await self.channel_layer.group_send(

@@ -1,24 +1,26 @@
 from django.db.models import Q
-from rest_framework.generics import ListAPIView, GenericAPIView
+from rest_framework.generics import ListAPIView, CreateAPIView
 from rest_framework.response import Response
 
-from apps.models import Users, Message
-from apps.serializers import UserModelSerializer, MessageModelSerializer
+from apps.models import User, Message
+from apps.serializers import UserModelSerializer, MessageModelSerializer, UserCreateModelSerializer, \
+    MyMessageListModelSerializer
+
+
+class UserCreateAPIView(CreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserCreateModelSerializer
 
 
 class MyChatListApiView(ListAPIView):
-    queryset = Users.objects.all()
+    queryset = User.objects.all()
     filter_backends = None
     serializer_class = UserModelSerializer
-
-    def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
 
 
 class ChatMessageListApiView(ListAPIView):
     '''
     userga tegishli barcha xabarlarni olish
-
     '''
     queryset = Message.objects.all()
     filter_backends = None
@@ -38,3 +40,14 @@ class ChatMessageListApiView(ListAPIView):
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+
+class MyMessageListAPIView(ListAPIView):
+    queryset = Message.objects.all()
+    serializer_class = MyMessageListModelSerializer
+
+    def get_queryset(self):
+        user = self.request.user.id
+        query = super().get_queryset()
+        query.filter(Q(sender_id=user) or Q(receiver_id=user))
+        return query
