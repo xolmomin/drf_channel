@@ -1,6 +1,6 @@
 # Django WebSocket Chat
 
-<img src="https://assets.stanko.io/blog/production/store/a6bad9b68057b2ed9716dd35ced216fa.gif">
+  <img src="https://assets.stanko.io/blog/production/store/a6bad9b68057b2ed9716dd35ced216fa.gif">
 
 WebSocket Chat is a real-time chat application that allows people to converse with each other in one-to-one messages
 using the WebSocket protocol.

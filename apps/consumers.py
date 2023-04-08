@@ -59,6 +59,19 @@ class ChatConsumer(BaseAsyncJsonWebsocketConsumer):
         if self.from_user.is_authenticated:
             await self.notify_user_status(False)
 
+    async def file_type(self, data: dict):
+        file = data.get('file')
+        if not file:
+            await self.send_error('file yoq')
+
+        if not self.to_user:
+            await self.send_error('userni kiriting')
+            return
+
+        if not self.to_user:
+            await self.send_error('bunday odam yoqku')
+            return
+
     async def msg_type(self, data):
         msg = data.get('msg')
 

@@ -4,9 +4,14 @@ import pytest
 from asgiref.sync import sync_to_async
 from channels.db import database_sync_to_async
 from channels.testing import WebsocketCommunicator
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test.client import BOUNDARY, MULTIPART_CONTENT, encode_multipart  # noqa
+from rest_framework.reverse import reverse
+from rest_framework.status import HTTP_201_CREATED
 
 from apps.models import User
 from root.asgi import application
+from root.settings import MEDIA_ROOT
 
 
 @pytest.mark.django_db
@@ -68,11 +73,29 @@ class TestWebSocket:
         res = await socket_2.receive_json_from()
         assert res['msg'] == data['msg']
 
+    async def test_send_file(self, sender_data, receiver_data, api_client):
+        sender, s_header = await sender_data
+        socket_1 = WebsocketCommunicator(application, '/ws', s_header)
+        connected1, _ = await socket_1.connect()
+        assert connected1
 
-'''
-user_db = await database_sync_to_async(
-    User.objects.create_user,
-    thread_sensitive=True
-)(data['username'], 'admin1@mail.ru', data['password'])
+        receiver, r_header = await receiver_data
+        socket_2 = WebsocketCommunicator(application, '/ws', r_header)
+        connected2, _ = await socket_2.connect()
+        assert connected2
 
-'''
+        # TODO oxshamadi )
+        image = SimpleUploadedFile('test.png', content=open(MEDIA_ROOT + '/test.png', 'rb').read(),
+                                   content_type='image/jpeg')
+        data = {'name': image.name, 'file': image.file}
+        response = api_client.post(reverse('file-list'), data)
+        assert response.status_code == HTTP_201_CREATED
+
+        await socket_1.send_json_to(data)
+        res = await socket_1.receive_json_from()
+        assert res['is_online']
+
+        await asyncio.sleep(.2)
+
+        res = await socket_2.receive_json_from()
+        assert res['msg'] == data['msg']
