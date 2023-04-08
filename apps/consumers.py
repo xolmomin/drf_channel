@@ -44,14 +44,9 @@ class ChatConsumer(BaseAsyncJsonWebsocketConsumer):
 
         return
 
-    async def send_message(self, sender_id: int, receiver_id: int, msg_id: int):
+    async def send_message(self, data: dict):
         await self.channel_layer.group_send(
-            self.groups, {
-                'type': 'send_read_msg',
-                'from_user': sender_id,
-                'to_user': receiver_id,
-                'msg_id': msg_id
-            }
+            self.groups, data
         )
 
     async def disconnect(self, close_code):
@@ -109,9 +104,22 @@ class ChatConsumer(BaseAsyncJsonWebsocketConsumer):
             return message.sender_id, True
         return None, False
 
+    @database_sync_to_async
+    def user_delete_msg_db(self, user_id: int, msg_id: int):
+        message = Message.objects.filter(sender_id=user_id, id=msg_id).first()
+        if message:
+            receiver_id = message.receiver_id
+            message.delete()
+            return True, receiver_id
+        return False, None
+
     async def read_msg(self, data):
         msg_id = data.get('msg_id')
         return await self.user_read_msg_db(self.from_user.id, msg_id)
+
+    async def delte_msg(self, data):
+        msg_id = data.get('msg_id')
+        return await self.user_delete_msg_db(self.from_user.id, msg_id)
 
     async def receive_json(self, data, *args):
         user_id = data.get('user_id')
@@ -130,7 +138,27 @@ class ChatConsumer(BaseAsyncJsonWebsocketConsumer):
         elif _type == 'read_msg':
             sender_id, is_read = await self.read_msg(data)
             if is_read:
-                await self.send_message(sender_id, self.from_user.id, data.get('msg_id'))
+                data = {
+                    'type': 'send_read_msg',
+                    'from_user': sender_id,
+                    'to_user': self.from_user.id,
+                    'msg_id': data.get('msg_id')
+                }
+                await self.send_message(data)
+
+        elif _type == 'delete_msg':
+            is_delete, sender_id = await self.delte_msg(data)
+            data = {
+                'type': 'send_delete_msg',
+                'from_user': sender_id,
+                'to_user': self.from_user.id,
+            }
+            if is_delete:
+
+                data['msg'] = 'Message successfully deleted.'
+            else:
+                data['msg'] = 'Message not found.'
+            await self.send_message(data)
 
         else:
             await self.send_error('type ni kiriting')
@@ -199,6 +227,15 @@ class ChatConsumer(BaseAsyncJsonWebsocketConsumer):
                 'type': 'read_msg',
                 'msg_id': event['msg_id'],
                 'from': event['to_user'],
+            }
+            await self.send_json(data)
+
+    async def send_delete_msg(self, event):
+        from_user = event['from_user']
+        if self.from_user.pk == event['to_user'] or self.from_user.pk == from_user:
+            data = {
+                'type': 'delete_msg',
+                'msg': event['msg'],
             }
             await self.send_json(data)
 

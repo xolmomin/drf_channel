@@ -39,3 +39,4 @@ type
 msg - xabar yozishish uchun
 status - online boldimi yoqmi
 read_msg - xabar oqilgani
+delete_msg - xabarni ochiradi
